@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: clipscribe-pro-api
+    runtime: docker
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: MAX_UPLOAD_MB
+        value: "800"
+      - key: MAX_DURATION_SECONDS
+        value: "14400"
+      - key: USE_CUDA
+        value: "0"
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: HF_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

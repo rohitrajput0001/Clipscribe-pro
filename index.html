@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml"><title>ClipScribe Pro — AI Video Transcription</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#121a2d;--line:#293653;--text:#edf2ff;--muted:#a8b4cc;--accent:#a5b4fc;--green:#6ee7b7;--red:#fda4af}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1000px 500px at 12% -10%,#293a70 0%,transparent 60%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:1120px;margin:auto;padding:34px 18px 70px}.eyebrow{color:var(--accent);font-size:12px;letter-spacing:.16em;font-weight:800;text-transform:uppercase}
+h1{font-size:clamp(34px,6vw,58px);letter-spacing:-.045em;line-height:1.03;margin:8px 0}.lead{color:var(--muted);max-width:800px}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;margin-top:24px}.panel{border:1px solid var(--line);border-radius:18px;padding:20px;background:linear-gradient(180deg,#151f35,#10182a);box-shadow:0 18px 55px #0003}.wide{grid-column:1/-1}
+h2{font-size:18px;margin:0 0 14px}label{display:block;font-size:13px;color:var(--muted);margin:12px 0 5px}
+input[type=text],input[type=file],select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:#0b1325;color:var(--text);padding:11px;font:inherit}
+input[type=file]{border-style:dashed}input[type=checkbox]{accent-color:#a5b4fc}
+button{border:0;border-radius:10px;padding:11px 15px;background:var(--accent);color:#111827;font-weight:800;font:inherit;cursor:pointer}
+button.secondary{background:#263451;border:1px solid #405176;color:var(--text)}button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.check{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+.hint,.muted{color:var(--muted);font-size:12px}.status{white-space:pre-wrap;background:#0a1223;border:1px solid var(--line);padding:12px;border-radius:10px;margin-top:12px;color:var(--muted)}.status.ok{color:var(--green);border-color:#27624e}.status.err{color:var(--red);border-color:#74414c}
+textarea{min-height:340px;resize:vertical;line-height:1.55}.tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.tools button{font-size:13px;padding:9px 12px}
+.pill{display:inline-block;border:1px solid #435276;border-radius:999px;padding:3px 9px;color:#c7d2fe;font-size:11px;margin-right:5px}
+#results{display:none}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.tabs button.active{background:#dbeafe;color:#111827}
+footer{font-size:12px;color:var(--muted);margin-top:20px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.checks{grid-template-columns:1fr}main{padding:24px 13px 55px}.panel{padding:15px}}
+</style>
+</head>
+<body><main>
+<header><div class="eyebrow">Professional transcription workspace</div><h1>ClipScribe Pro</h1>
+<p class="lead">Turn video into accurate, timestamped transcripts with multilingual speech recognition, speaker diarization, subtitle extraction, on-screen caption OCR, scene-cut detection and export tools.</p>
+<span class="pill">Whisper ASR</span><span class="pill">Speaker labels*</span><span class="pill">OCR captions</span><span class="pill">PDF / DOCX / SRT</span></header>
+
+<section class="grid">
+<div class="panel">
+<h2>01 · Video source</h2>
+<label>Upload a video or audio file</label><input id="file" type="file" accept="video/*,audio/*">
+<label>Or paste a direct media-file URL</label><input id="url" type="text" placeholder="https://host.example/video.mp4">
+<p class="hint">URL must point directly to a media file and allow downloading. YouTube/Instagram/TikTok watch-page links are not supported. Use uploads when possible.</p>
+<label>Backend API address</label><input id="api" type="text" placeholder="https://your-backend.onrender.com">
+<p class="hint">Deploy the backend first and paste its public URL here. Do not include a trailing slash.</p>
+<div class="row"><button id="health" class="secondary">Test backend</button><button id="run">Generate transcript</button></div>
+<div id="status" class="status">Ready. Connect a deployed backend to begin.</div>
+</div>
+
+<div class="panel">
+<h2>02 · Processing options</h2>
+<label>Whisper model</label><select id="model">
+<option value="small">Small — recommended balance</option><option value="base">Base — faster, lighter</option><option value="medium">Medium — higher accuracy, more resources</option><option value="large-v3">Large v3 — best quality, very resource intensive</option><option value="distil-large-v3">Distil Large v3 — faster large model</option><option value="tiny">Tiny — quick tests</option></select>
+<label>Audio language</label><select id="language"><option value="">Auto-detect</option><option value="en">English</option><option value="hi">Hindi</option><option value="bn">Bengali</option><option value="ur">Urdu</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="es">Spanish</option><option value="fr">French</option><option value="de">German</option><option value="ja">Japanese</option><option value="ko">Korean</option><option value="zh">Chinese</option><option value="ar">Arabic</option><option value="ru">Russian</option><option value="pt">Portuguese</option></select>
+<label>Speech task</label><select id="task"><option value="transcribe">Transcribe original language</option><option value="translate">Translate speech to English</option></select>
+<label>Optional AI transcript enhancement</label><select id="enhance"><option value="none">Off</option><option value="clean">Clean punctuation and formatting</option><option value="summary">Generate accurate summary</option><option value="screenplay">Screenplay-style dialogue draft</option></select>
+<div class="checks">
+<label class="check"><input id="diarize" type="checkbox"> Identify speakers (requires HF token)</label>
+<label class="check"><input id="ocr" type="checkbox"> Read burned-in captions (OCR)</label>
+<label class="check"><input id="scenes" type="checkbox" checked> Detect scene cuts</label>
+<label class="check"><input id="screenplay" type="checkbox" checked> Build screenplay draft</label>
+<label class="check"><input id="vad" type="checkbox" checked> Filter silence / VAD</label>
+<label class="check"><input id="words" type="checkbox"> Word-level timestamps</label>
+</div>
+<p class="hint">*Speaker diarization requires a Hugging Face token and access approval for the pyannote model. AI enhancement requires an OpenAI API key on the backend.</p>
+</div>
+
+<div class="panel wide" id="results">
+<h2>03 · Your transcript</h2>
+<div class="tools"><button class="secondary" id="txt">Download TXT</button><button class="secondary" id="srt">Download SRT</button><button class="secondary" id="vtt">Download VTT</button><button class="secondary" id="json">Download JSON</button><button class="secondary" id="docx">Download DOCX</button><button class="secondary" id="pdf">Download PDF</button><button class="secondary" id="copy">Copy transcript</button></div>
+<div class="tabs" id="tabs"></div><textarea id="output" spellcheck="false"></textarea>
+<div id="details" class="hint"></div>
+</div>
+</section>
+<footer>Processing runs on your configured backend, not GitHub Pages. Provide only media you have permission to process. Model quality, runtime and supported duration depend on backend resources. This is an extensible self-hosted tool, not a guarantee of perfect transcription.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);let data=null,active="combined";
+function apiBase(){return $("api").value.trim().replace(/\/+$/,"")}
+function say(message,type=""){const el=$("status");el.textContent=message;el.className="status "+type}
+async function checkHealth(){const base=apiBase();if(!base)return say("Enter the backend URL first.","err");say("Checking backend...");try{const r=await fetch(base+"/api/health");if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();say("Connected: "+j.app+" · version "+j.version,"ok")}catch(e){say("Backend check failed: "+e.message,"err")}}
+$("health").onclick=checkHealth;
+function stamp(s){s=Math.max(0,s||0);let h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${x.toFixed(3).padStart(6,"0")}`}
+function textFor(key){
+ if(!data)return "";
+ if(key==="combined")return (data.combined||[]).map(x=>`[${stamp(x.start)}] ${x.speaker?x.speaker+": ":""}${x.text}  (${x.source})`).join("\n");
+ if(key==="speech")return (data.speech||[]).map(x=>`[${stamp(x.start)}] ${x.speaker?x.speaker+": ":""}${x.text}`).join("\n");
+ if(key==="subtitles")return (data.embedded_subtitles||[]).map(x=>`[${stamp(x.start)}] ${x.text}`).join("\n");
+ if(key==="ocr")return (data.on_screen_ocr||[]).map(x=>`[${stamp(x.start)}] ${x.text}`).join("\n");
+ if(key==="screenplay")return data.ai_enhancement||data.screenplay_draft||"No screenplay draft available.";
+ if(key==="summary")return data.ai_enhancement||"Summary enhancement was not requested or configured.";
+ if(key==="scenes")return (data.scene_changes||[]).map(stamp).join("\n");
+ return "";
+}
+function showResults(){
+ $("results").style.display="block";const keys=["combined","speech","subtitles","ocr","screenplay","scenes"];
+ const labels={combined:"Combined",speech:"Speech",subtitles:"Embedded subtitles",ocr:"OCR captions",screenplay:"Script draft",scenes:"Scene cuts"};
+ $("tabs").innerHTML="";keys.forEach(k=>{const b=document.createElement("button");b.className="secondary"+(k===active?" active":"");b.textContent=labels[k];b.onclick=()=>{active=k;showResults()};$("tabs").appendChild(b)});
+ $("output").value=textFor(active);
+ $("details").textContent=`Detected language: ${data.detected_language||"unknown"} · Confidence: ${Math.round((data.language_probability||0)*100)}% · Duration: ${Math.round(data.metadata?.duration||0)} sec · ${data.speech?.length||0} speech segments · ${data.scene_changes?.length||0} detected scene cuts`;
+}
+function download(name,content,type){const a=document.createElement("a"),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+function srtTime(s){let ms=Math.round(s*1000),h=Math.floor(ms/3600000),m=Math.floor(ms%3600000/60000),sec=Math.floor(ms%60000/1000),msec=ms%1000;return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")},${String(msec).padStart(3,"0")}`}
+function speechSrt(){return (data?.speech||[]).map((x,i)=>`${i+1}\n${srtTime(x.start)} --> ${srtTime(x.end)}\n${x.speaker?x.speaker+": ":""}${x.text}`).join("\n\n")}
+$("txt").onclick=()=>download("clipscribe-transcript.txt",textFor("combined"),"text/plain");
+$("srt").onclick=()=>download("clipscribe-transcript.srt",speechSrt(),"text/plain");
+$("vtt").onclick=()=>download("clipscribe-transcript.vtt","WEBVTT\n\n"+speechSrt().replace(/,/g,"."),"text/vtt");
+$("json").onclick=()=>download("clipscribe-result.json",JSON.stringify(data,null,2),"application/json");
+$("copy").onclick=async()=>{try{await navigator.clipboard.writeText($("output").value);say("Current transcript tab copied.","ok")}catch{say("Clipboard unavailable; select and copy the text manually.")}};
+async function exportOffice(kind){
+ const base=apiBase();if(!base||!data)return;
+ try{say("Preparing "+kind.toUpperCase()+"...");const r=await fetch(base+"/api/export/"+kind,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});if(!r.ok)throw new Error(await r.text());const blob=await r.blob();const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="clipscribe-transcript."+kind;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);say(kind.toUpperCase()+" ready.","ok")}catch(e){say("Export failed: "+e.message,"err")}
+}
+$("docx").onclick=()=>exportOffice("docx");$("pdf").onclick=()=>exportOffice("pdf");
+$("run").onclick=async()=>{
+ const base=apiBase();if(!base)return say("Enter the backend API address first.","err");
+ const file=$("file").files[0],url=$("url").value.trim();if(!file&&!url)return say("Upload a video or paste a direct media URL.","err");
+ if(file&&url)return say("Choose either an uploaded file or a URL, not both.","err");
+ const form=new FormData();if(file)form.append("file",file);if(url)form.append("url",url);
+ ["model","language","task","enhance"].forEach(k=>form.append(k,$(k).value));
+ ["diarize","ocr","scenes","screenplay","vad"].forEach(k=>form.append(k,$(k).checked));form.append("word_timestamps",$("words").checked);
+ $("run").disabled=true;$("results").style.display="none";say("Uploading and processing. Long videos can take several minutes. Keep this page open...");
+ try{
+  const r=await fetch(base+"/api/transcribe",{method:"POST",body:form});
+  const body=await r.text();let j;try{j=JSON.parse(body)}catch{throw new Error(body.slice(0,1000)||"Unexpected backend response")}
+  if(!r.ok)throw new Error(j.detail||"Backend error "+r.status);
+  data=j;active="combined";showResults();say("Transcription completed successfully.","ok");
+ }catch(e){say("Processing failed:\n"+e.message+"\n\nCheck backend logs, deployment memory, FFmpeg and model availability.","err")}
+ finally{$("run").disabled=false}
+};
+</script><script>
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Offline shell unavailable", err)));
+}
+</script>
+</body></html>
